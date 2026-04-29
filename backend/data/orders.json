@@ -9,6 +9,8 @@
     {
       "id": "PED-1001",
       "customer": "Ana Souza",
+      "zip_code": "01310-200",
+      "address": "Avenida Paulista, Bela Vista, Sao Paulo, SP",
       "latitude": -23.555225,
       "longitude": -46.639557,
       "priority": 3,
@@ -17,6 +19,8 @@
     {
       "id": "PED-1002",
       "customer": "Bruno Lima",
+      "zip_code": "01415-001",
+      "address": "Rua Augusta, Consolacao, Sao Paulo, SP",
       "latitude": -23.568704,
       "longitude": -46.648722,
       "priority": 2,
@@ -25,6 +29,8 @@
     {
       "id": "PED-1003",
       "customer": "Carla Mendes",
+      "zip_code": "05407-002",
+      "address": "Rua Teodoro Sampaio, Pinheiros, Sao Paulo, SP",
       "latitude": -23.570842,
       "longitude": -46.674671,
       "priority": 1,
@@ -33,6 +39,8 @@
     {
       "id": "PED-1004",
       "customer": "Diego Martins",
+      "zip_code": "01246-000",
+      "address": "Avenida Angelica, Higienopolis, Sao Paulo, SP",
       "latitude": -23.548943,
       "longitude": -46.665315,
       "priority": 2,
@@ -41,6 +49,8 @@
     {
       "id": "PED-1005",
       "customer": "Fernanda Rocha",
+      "zip_code": "04538-133",
+      "address": "Avenida Brigadeiro Faria Lima, Itaim Bibi, Sao Paulo, SP",
       "latitude": -23.582279,
       "longitude": -46.671111,
       "priority": 3,
