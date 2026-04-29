@@ -17,6 +17,54 @@ const api = {
   },
 };
 
+function onlyDigits(value) {
+  return value.replace(/\D/g, "");
+}
+
+function formatAddressFromCep(data) {
+  return [data.logradouro, data.bairro, data.localidade, data.uf]
+    .filter(Boolean)
+    .join(", ");
+}
+
+async function fetchAddressByCep(zipCode) {
+  const cleanZipCode = onlyDigits(zipCode);
+  if (cleanZipCode.length !== 8) {
+    throw new Error("Informe um CEP com 8 digitos.");
+  }
+
+  const response = await fetch(`https://viacep.com.br/ws/${cleanZipCode}/json/`);
+  if (!response.ok) throw new Error("Nao foi possivel buscar o CEP.");
+
+  const data = await response.json();
+  if (data.erro) throw new Error("CEP nao encontrado.");
+
+  return {
+    zip_code: cleanZipCode.replace(/^(\d{5})(\d{3})$/, "$1-$2"),
+    address: formatAddressFromCep(data),
+  };
+}
+
+async function geocodeAddress(address) {
+  const params = new URLSearchParams({
+    q: address,
+    format: "json",
+    limit: "1",
+    countrycodes: "br",
+  });
+
+  const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
+  if (!response.ok) throw new Error("Nao foi possivel localizar o endereco no mapa.");
+
+  const results = await response.json();
+  if (!results.length) throw new Error("Endereco encontrado, mas sem coordenadas.");
+
+  return {
+    latitude: Number(results[0].lat),
+    longitude: Number(results[0].lon),
+  };
+}
+
 function App() {
   const [restaurant, setRestaurant] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -24,6 +72,7 @@ function App() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [priorityWeight, setPriorityWeight] = useState(0.015);
   const [status, setStatus] = useState("Carregando pedidos...");
+  const [lookupStatus, setLookupStatus] = useState("");
 
   useEffect(() => {
     api
@@ -113,7 +162,9 @@ function App() {
           ? {
               ...order,
               [field]:
-                field === "customer" ? value : Number.parseFloat(value) || Number(value),
+                field === "customer" || field === "zip_code" || field === "address"
+                  ? value
+                  : Number.parseFloat(value) || Number(value),
             }
           : order
       )
@@ -125,6 +176,8 @@ function App() {
     const newOrder = {
       id: `PED-${nextNumber}`,
       customer: "Novo cliente",
+      zip_code: "",
+      address: "",
       latitude: restaurant.latitude + 0.01,
       longitude: restaurant.longitude + 0.01,
       priority: 1,
@@ -140,6 +193,32 @@ function App() {
       currentOrders.filter((order) => order.id !== selectedOrderId)
     );
     setSelectedOrderId(null);
+  }
+
+  async function fillAddressFromCep() {
+    if (!selectedOrder) return;
+
+    try {
+      setLookupStatus("Buscando endereco...");
+      const addressData = await fetchAddressByCep(selectedOrder.zip_code || "");
+      setLookupStatus("Localizando no mapa...");
+      const coordinates = await geocodeAddress(addressData.address);
+
+      setOrders((currentOrders) =>
+        currentOrders.map((order) =>
+          order.id === selectedOrder.id
+            ? {
+                ...order,
+                ...addressData,
+                ...coordinates,
+              }
+            : order
+        )
+      );
+      setLookupStatus("Endereco e coordenadas atualizados.");
+    } catch (error) {
+      setLookupStatus(error.message);
+    }
   }
 
   return (
@@ -207,27 +286,26 @@ function App() {
                   />
                 </label>
                 <label className="field">
-                  Latitude
+                  CEP
                   <input
-                    type="number"
-                    step="0.000001"
-                    value={selectedOrder.latitude}
+                    inputMode="numeric"
+                    value={selectedOrder.zip_code || ""}
                     onChange={(event) =>
-                      updateOrder(selectedOrder.id, "latitude", event.target.value)
+                      updateOrder(selectedOrder.id, "zip_code", event.target.value)
                     }
                   />
                 </label>
                 <label className="field">
-                  Longitude
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={selectedOrder.longitude}
+                  Endereco
+                  <textarea
+                    value={selectedOrder.address || ""}
                     onChange={(event) =>
-                      updateOrder(selectedOrder.id, "longitude", event.target.value)
+                      updateOrder(selectedOrder.id, "address", event.target.value)
                     }
-                  />
+                  ></textarea>
                 </label>
+                <button onClick={fillAddressFromCep}>Buscar pelo CEP</button>
+                {lookupStatus && <p className="lookup-status">{lookupStatus}</p>}
                 <label className="field">
                   Prioridade
                   <select
@@ -265,6 +343,7 @@ function App() {
                   <div>
                     <strong>{stop.order.id}</strong>
                     <p>{stop.order.customer}</p>
+                    {stop.order.address && <p>{stop.order.address}</p>}
                     <small>
                       trecho {stop.distance_from_previous.toFixed(4)} | acumulado{" "}
                       {stop.accumulated_distance.toFixed(4)}
