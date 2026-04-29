@@ -73,6 +73,7 @@ function App() {
   const [priorityWeight, setPriorityWeight] = useState(0.015);
   const [status, setStatus] = useState("Carregando pedidos...");
   const [lookupStatus, setLookupStatus] = useState("");
+  const [addressSearchMode, setAddressSearchMode] = useState(false);
 
   useEffect(() => {
     api
@@ -200,6 +201,18 @@ function App() {
     setSelectedOrderId(null);
   }
 
+  function enableAddressSearchMode() {
+    if (!selectedOrder) return;
+
+    setAddressSearchMode(true);
+    setLookupStatus("Digite o endereco completo e clique em Localizar endereco.");
+    setOrders((currentOrders) =>
+      currentOrders.map((order) =>
+        order.id === selectedOrder.id ? { ...order, zip_code: "" } : order
+      )
+    );
+  }
+
   async function fillAddressFromCep() {
     if (!selectedOrder) return;
 
@@ -230,15 +243,21 @@ function App() {
     if (!selectedOrder) return;
 
     try {
+      const typedAddress = selectedOrder.address?.trim();
+      if (!typedAddress) {
+        throw new Error("Digite um endereco completo para localizar.");
+      }
+
       setLookupStatus("Localizando endereco digitado...");
-      const coordinates = await geocodeAddress(selectedOrder.address || "");
+      const coordinates = await geocodeAddress(typedAddress);
 
       setOrders((currentOrders) =>
         currentOrders.map((order) =>
           order.id === selectedOrder.id
             ? {
                 ...order,
-                zip_code: order.zip_code || "Nao informado",
+                zip_code: "",
+                address: typedAddress,
                 ...coordinates,
               }
             : order
@@ -334,9 +353,14 @@ function App() {
                   ></textarea>
                 </label>
                 <button onClick={fillAddressFromCep}>Buscar pelo CEP</button>
-                <button className="secondary" onClick={locateTypedAddress}>
+                <button className="secondary" onClick={enableAddressSearchMode}>
                   Nao sei meu CEP
                 </button>
+                {addressSearchMode && (
+                  <button className="secondary" onClick={locateTypedAddress}>
+                    Localizar endereco
+                  </button>
+                )}
                 {lookupStatus && <p className="lookup-status">{lookupStatus}</p>}
                 <label className="field">
                   Prioridade
