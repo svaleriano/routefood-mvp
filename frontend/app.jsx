@@ -105,9 +105,8 @@ function App() {
       13
     );
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap",
-      crossOrigin: true,
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
       keepBuffer: 4,
     }).addTo(map);
 
@@ -149,7 +148,9 @@ function App() {
       map.fitBounds(routePoints, { padding: [40, 40] });
     }
 
-    window.setTimeout(() => map.invalidateSize(), 100);
+    map.whenReady(() => map.invalidateSize());
+    window.setTimeout(() => map.invalidateSize(), 250);
+    window.setTimeout(() => map.invalidateSize(), 750);
 
     return () => map.remove();
   }, [restaurant, orders, route]);
