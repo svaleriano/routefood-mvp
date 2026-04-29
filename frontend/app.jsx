@@ -50,6 +50,7 @@ async function geocodeAddress(address) {
     q: address,
     format: "json",
     limit: "1",
+    addressdetails: "1",
     countrycodes: "br",
   });
 
@@ -65,6 +66,34 @@ async function geocodeAddress(address) {
   };
 }
 
+async function searchAddressOptions(address) {
+  const params = new URLSearchParams({
+    q: address,
+    format: "json",
+    limit: "5",
+    addressdetails: "1",
+    countrycodes: "br",
+  });
+
+  const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
+  if (!response.ok) throw new Error("Nao foi possivel buscar opcoes de endereco.");
+
+  const results = await response.json();
+  if (!results.length) throw new Error("Nenhuma opcao encontrada para esse endereco.");
+
+  return results;
+}
+
+function zipCodeFromAddressOption(option) {
+  const postcode = option.address?.postcode;
+  if (!postcode) return "";
+
+  const cleanZipCode = onlyDigits(postcode);
+  if (cleanZipCode.length !== 8) return postcode;
+
+  return cleanZipCode.replace(/^(\d{5})(\d{3})$/, "$1-$2");
+}
+
 function App() {
   const [restaurant, setRestaurant] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -73,6 +102,7 @@ function App() {
   const [priorityWeight, setPriorityWeight] = useState(0.015);
   const [status, setStatus] = useState("Carregando pedidos...");
   const [lookupStatus, setLookupStatus] = useState("");
+  const [addressOptions, setAddressOptions] = useState([]);
 
   useEffect(() => {
     api
@@ -221,39 +251,54 @@ function App() {
         )
       );
       setLookupStatus("Endereco e coordenadas atualizados.");
+      setAddressOptions([]);
     } catch (error) {
       setLookupStatus(error.message);
     }
   }
 
-  async function locateTypedAddress() {
+  async function findAddressOptions() {
     if (!selectedOrder) return;
 
     try {
       const typedAddress = selectedOrder.address?.trim();
       if (!typedAddress) {
-        throw new Error("Digite um endereco completo para localizar.");
+        throw new Error("Digite parte do endereco para buscar opcoes.");
       }
 
-      setLookupStatus("Localizando endereco digitado...");
-      const coordinates = await geocodeAddress(typedAddress);
-
-      setOrders((currentOrders) =>
-        currentOrders.map((order) =>
-          order.id === selectedOrder.id
-            ? {
-                ...order,
-                zip_code: "",
-                address: typedAddress,
-                ...coordinates,
-              }
-            : order
-        )
-      );
-      setLookupStatus("Endereco localizado no mapa.");
+      setLookupStatus("Buscando opcoes de endereco...");
+      const options = await searchAddressOptions(typedAddress);
+      setAddressOptions(options);
+      setLookupStatus("Selecione uma das opcoes encontradas.");
     } catch (error) {
+      setAddressOptions([]);
       setLookupStatus(error.message);
     }
+  }
+
+  function selectAddressOption(option) {
+    if (!selectedOrder) return;
+
+    const zipCode = zipCodeFromAddressOption(option);
+    const selectedAddress = option.display_name;
+
+    setOrders((currentOrders) =>
+      currentOrders.map((order) =>
+        order.id === selectedOrder.id
+          ? {
+              ...order,
+              zip_code: zipCode,
+              address: selectedAddress,
+              latitude: Number(option.lat),
+              longitude: Number(option.lon),
+            }
+          : order
+      )
+    );
+    setAddressOptions([]);
+    setLookupStatus(
+      zipCode ? "Endereco, CEP e coordenadas preenchidos." : "Endereco localizado sem CEP."
+    );
   }
 
   return (
@@ -340,9 +385,22 @@ function App() {
                   ></textarea>
                 </label>
                 <button onClick={fillAddressFromCep}>Buscar pelo CEP</button>
-                <button className="secondary" onClick={locateTypedAddress}>
+                <button className="secondary" onClick={findAddressOptions}>
                   Nao sei o CEP
                 </button>
+                {addressOptions.length > 0 && (
+                  <div className="address-options">
+                    {addressOptions.map((option) => (
+                      <button
+                        key={option.place_id}
+                        className="address-option"
+                        onClick={() => selectAddressOption(option)}
+                      >
+                        {option.display_name}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {lookupStatus && <p className="lookup-status">{lookupStatus}</p>}
                 <label className="field">
                   Prioridade
