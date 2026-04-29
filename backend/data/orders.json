@@ -1,0 +1,50 @@
+{
+  "restaurant": {
+    "id": "restaurante-central",
+    "name": "Restaurante Central",
+    "latitude": -23.561684,
+    "longitude": -46.655981
+  },
+  "orders": [
+    {
+      "id": "PED-1001",
+      "customer": "Ana Souza",
+      "latitude": -23.555225,
+      "longitude": -46.639557,
+      "priority": 3,
+      "max_delivery_minutes": 30
+    },
+    {
+      "id": "PED-1002",
+      "customer": "Bruno Lima",
+      "latitude": -23.568704,
+      "longitude": -46.648722,
+      "priority": 2,
+      "max_delivery_minutes": 45
+    },
+    {
+      "id": "PED-1003",
+      "customer": "Carla Mendes",
+      "latitude": -23.570842,
+      "longitude": -46.674671,
+      "priority": 1,
+      "max_delivery_minutes": 60
+    },
+    {
+      "id": "PED-1004",
+      "customer": "Diego Martins",
+      "latitude": -23.548943,
+      "longitude": -46.665315,
+      "priority": 2,
+      "max_delivery_minutes": 40
+    },
+    {
+      "id": "PED-1005",
+      "customer": "Fernanda Rocha",
+      "latitude": -23.582279,
+      "longitude": -46.671111,
+      "priority": 3,
+      "max_delivery_minutes": 35
+    }
+  ]
+}
