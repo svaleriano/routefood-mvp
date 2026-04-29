@@ -107,6 +107,8 @@ function App() {
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap",
+      crossOrigin: true,
+      keepBuffer: 4,
     }).addTo(map);
 
     L.control.zoom({ position: "bottomright" }).addTo(map);
@@ -146,6 +148,8 @@ function App() {
       L.polyline(routePoints, { color: "#ea1d2c", weight: 4, opacity: 0.9 }).addTo(map);
       map.fitBounds(routePoints, { padding: [40, 40] });
     }
+
+    window.setTimeout(() => map.invalidateSize(), 100);
 
     return () => map.remove();
   }, [restaurant, orders, route]);
