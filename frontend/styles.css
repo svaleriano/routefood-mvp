@@ -243,6 +243,17 @@ h3 {
   width: 100%;
 }
 
+.leaflet-container {
+  background: #edf1f4;
+  height: 100%;
+  width: 100%;
+}
+
+.leaflet-container img,
+.leaflet-tile {
+  max-width: none;
+}
+
 .pin {
   align-items: center;
   border: 2px solid #fff;
