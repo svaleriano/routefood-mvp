@@ -226,6 +226,30 @@ function App() {
     }
   }
 
+  async function locateTypedAddress() {
+    if (!selectedOrder) return;
+
+    try {
+      setLookupStatus("Localizando endereco digitado...");
+      const coordinates = await geocodeAddress(selectedOrder.address || "");
+
+      setOrders((currentOrders) =>
+        currentOrders.map((order) =>
+          order.id === selectedOrder.id
+            ? {
+                ...order,
+                zip_code: order.zip_code || "Nao informado",
+                ...coordinates,
+              }
+            : order
+        )
+      );
+      setLookupStatus("Endereco localizado no mapa.");
+    } catch (error) {
+      setLookupStatus(error.message);
+    }
+  }
+
   return (
     <main className="app-shell">
       <section className="workspace">
@@ -310,6 +334,9 @@ function App() {
                   ></textarea>
                 </label>
                 <button onClick={fillAddressFromCep}>Buscar pelo CEP</button>
+                <button className="secondary" onClick={locateTypedAddress}>
+                  Nao sei meu CEP
+                </button>
                 {lookupStatus && <p className="lookup-status">{lookupStatus}</p>}
                 <label className="field">
                   Prioridade
