@@ -238,14 +238,13 @@ h3 {
 }
 
 #map {
-  height: 100%;
   min-height: 720px;
+  height: 720px;
   width: 100%;
 }
 
 .leaflet-container {
   background: #edf1f4;
-  height: 100%;
   width: 100%;
 }
 
