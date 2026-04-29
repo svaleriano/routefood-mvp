@@ -21,6 +21,8 @@ class Point(BaseModel):
     id: str
     name: str | None = None
     customer: str | None = None
+    zip_code: str | None = None
+    address: str | None = None
     latitude: float
     longitude: float
 
