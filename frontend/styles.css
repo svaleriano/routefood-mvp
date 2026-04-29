@@ -43,6 +43,14 @@ button:hover {
   background: var(--brand-dark);
 }
 
+.secondary {
+  background: #178b78;
+}
+
+.secondary:hover {
+  background: #116f61;
+}
+
 .app-shell {
   min-height: 100vh;
 }
