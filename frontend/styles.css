@@ -23,6 +23,7 @@ body {
 
 button,
 input,
+textarea,
 select {
   font: inherit;
 }
@@ -147,6 +148,7 @@ h3 {
 }
 
 .field input,
+.field textarea,
 .field select {
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -157,9 +159,20 @@ h3 {
 }
 
 .field input:focus,
+.field textarea:focus,
 .field select:focus {
   border-color: var(--focus);
   outline: 2px solid rgba(23, 139, 120, 0.16);
+}
+
+.field textarea {
+  min-height: 74px;
+  resize: vertical;
+}
+
+.lookup-status {
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .order-list {
