@@ -9,6 +9,8 @@ Projeto de estudo para entrevista: um roteirizador simples de entregas inspirado
 - Dados em JSON
 - Leaflet com OpenStreetMap
 - Distancia euclidiana
+- Busca de endereco por CEP com ViaCEP
+- Geocodificacao do endereco com OpenStreetMap/Nominatim
 
 ## Como rodar
 
@@ -28,6 +30,8 @@ http://127.0.0.1:8000
 ## Como funciona
 
 O backend carrega um restaurante e uma lista de pedidos a partir de `backend/data/orders.json`.
+
+Na interface, o usuario pode informar o CEP de um pedido. O frontend consulta a API publica do ViaCEP para preencher o endereco e usa o Nominatim, do ecossistema OpenStreetMap, para converter o endereco em latitude e longitude. Essas coordenadas continuam sendo usadas internamente para calcular a rota.
 
 Ao chamar `POST /api/route`, a API usa uma heuristica gulosa:
 
@@ -49,6 +53,6 @@ Quanto menor o score, mais cedo o pedido entra na rota.
 
 Eu desenvolvi um MVP para resolver um problema logistico parecido com um cenario do iFood: organizar a ordem de entregas a partir de um restaurante e varios pedidos.
 
-Usei FastAPI para expor os dados e calcular a rota, React para permitir edicao dos pedidos, Leaflet para visualizar os pontos no mapa e JSON para manter o projeto simples e facil de demonstrar.
+Usei FastAPI para expor os dados e calcular a rota, React para permitir edicao dos pedidos, ViaCEP para buscar endereco pelo CEP, Leaflet para visualizar os pontos no mapa e JSON para manter o projeto simples e facil de demonstrar.
 
 O algoritmo e uma heuristica gulosa. Ele nao garante a melhor rota global em todos os casos, mas entrega uma solucao rapida, facil de explicar e boa para um MVP. Para evoluir, eu poderia trocar a distancia euclidiana por tempo real de deslocamento, usar janelas de entrega, adicionar multiplos entregadores e comparar a heuristica com algoritmos como 2-opt.
